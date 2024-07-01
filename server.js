@@ -29,9 +29,9 @@ const getVisitorName = (url) => {
 	return visitorName.replace(/["']/g, "");
 };
 
-const fetchLocationInfo = async (city) => {
+const fetchLocationInfo = async (ip) => {
 	const response = await fetch(
-		`${config.WEATHER_API_BASE_URL}/current.json?key=${config.WEATHER_API_KEY}&q=${city}`
+		`${config.WEATHER_API_BASE_URL}/current.json?key=${config.WEATHER_API_KEY}&q=${ip}`
 	);
 	if (!response.ok) {
 		const result = await response.json();
