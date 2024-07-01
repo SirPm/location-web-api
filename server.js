@@ -68,7 +68,7 @@ const handleHelloRoute = async (req, res, url) => {
 		const response = {
 			client_ip: ipInfo.ip,
 			location: ipInfo.city,
-			greeting: `Hello, ${visitorName}! The temperature is ${weatherInfo.current.temp_c} degrees Celsius in ${ipInfo.city}.`,
+			greeting: `Hello, ${visitorName}!, the temperature is ${weatherInfo.current.temp_c} degrees Celsius in ${ipInfo.city}.`,
 		};
 		sendJsonResponse(res, 200, response);
 	} catch (err) {
