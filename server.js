@@ -2,8 +2,6 @@ import { createServer } from "http";
 
 const config = {
 	PORT: process.env.PORT || 8080,
-	IPINFO_BASE_URL: process.env.IPINFO_BASE_URL || "",
-	IPINFO_TOKEN: process.env.IPINFO_TOKEN || "",
 	WEATHER_API_BASE_URL: process.env.WEATHER_API_BASE_URL || "",
 	WEATHER_API_KEY: process.env.WEATHER_API_KEY || "",
 };
@@ -31,21 +29,7 @@ const getVisitorName = (url) => {
 	return visitorName.replace(/["']/g, "");
 };
 
-const fetchIpInfo = async (ip) => {
-	const response = await fetch(
-		`${config.IPINFO_BASE_URL}/${ip}/json?token=${config.IPINFO_TOKEN}`
-	);
-	if (!response.ok) {
-		const result = await response.json();
-		throw {
-			code: result.status || 500,
-			message: result.error?.message || "Error fetching IP info",
-		};
-	}
-	return response.json();
-};
-
-const fetchWeatherInfo = async (city) => {
+const fetchLocationInfo = async (city) => {
 	const response = await fetch(
 		`${config.WEATHER_API_BASE_URL}/current.json?key=${config.WEATHER_API_KEY}&q=${city}`
 	);
@@ -63,12 +47,13 @@ const handleHelloRoute = async (req, res, url) => {
 	try {
 		const visitorName = getVisitorName(url);
 		const ip = parseIp(req);
-		const ipInfo = await fetchIpInfo(ip);
-		const weatherInfo = await fetchWeatherInfo(ipInfo.city);
+		const locationInfo = await fetchLocationInfo(ip);
+		const city = locationInfo.location.name;
+		const temperature = locationInfo.current.temp_c;
 		const response = {
-			client_ip: ipInfo.ip,
-			location: ipInfo.city,
-			greeting: `Hello, ${visitorName}!, the temperature is ${weatherInfo.current.temp_c} degrees Celsius in ${ipInfo.city}.`,
+			client_ip: ip,
+			location: city,
+			greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${city}.`,
 		};
 		sendJsonResponse(res, 200, response);
 	} catch (err) {
