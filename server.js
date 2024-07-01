@@ -11,6 +11,13 @@ const sendJsonResponse = (res, code, data) => {
 	res.end(JSON.stringify(data));
 };
 
+const parseIp = (req) => {
+	return (
+		req.headers["x-forwarded-for"]?.split(",").shift() ||
+		req.socket?.remoteAddress
+	);
+};
+
 const getVisitorName = (url) => {
 	const visitorName = url.searchParams.get("visitor_name");
 	if (!visitorName) {
@@ -22,9 +29,9 @@ const getVisitorName = (url) => {
 	return visitorName;
 };
 
-const fetchIpInfo = async () => {
+const fetchIpInfo = async (ip) => {
 	const response = await fetch(
-		`${config.IPINFO_BASE_URL}/json?token=${config.IPINFO_TOKEN}`
+		`${config.IPINFO_BASE_URL}/${ip}/json?token=${config.IPINFO_TOKEN}`
 	);
 	if (!response.ok) {
 		const result = await response.json();
@@ -36,10 +43,11 @@ const fetchIpInfo = async () => {
 	return response.json();
 };
 
-const handleHelloRoute = async (res, url) => {
+const handleHelloRoute = async (req, res, url) => {
 	try {
 		const visitorName = getVisitorName(url);
-		const ipInfo = await fetchIpInfo();
+		const ip = parseIp(req);
+		const ipInfo = await fetchIpInfo(ip);
 		const response = {
 			client_ip: ipInfo.ip,
 			location: ipInfo.city,
@@ -57,7 +65,7 @@ const server = createServer(async (req, res) => {
 	try {
 		if (req.method === "GET" && req.url.startsWith("/api/hello")) {
 			const url = new URL(req.url, `http://${req.headers.host}`);
-			await handleHelloRoute(res, url);
+			await handleHelloRoute(req, res, url);
 		} else {
 			sendJsonResponse(res, 404, { message: "Route does not exist!" });
 		}
