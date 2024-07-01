@@ -28,7 +28,7 @@ const getVisitorName = (url) => {
 			message: "visitor_name query parameter is missing!",
 		};
 	}
-	return visitorName;
+	return visitorName.replace(/["']/g, "");
 };
 
 const fetchIpInfo = async (ip) => {
